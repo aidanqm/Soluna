@@ -87,8 +87,8 @@ local getcustomassets = {
 	['newvape/assets/new/guisettings.png'] = 'rbxassetid://14368318994',
 	['newvape/assets/new/guislider.png'] = 'rbxassetid://14368320020',
 	['newvape/assets/new/guisliderrain.png'] = 'rbxassetid://14368321228',
-	['newvape/assets/new/guiv4.png'] = 'rbxassetid://14368322199',
-	['newvape/assets/new/guivape.png'] = 'rbxassetid://14657521312',
+	['newvape/assets/new/guiv4.png'] = 'rbxassetid://6767676767676767',
+	['newvape/assets/new/guivape.png'] = 'rbxassetid://82339584271888',
 	['newvape/assets/new/info.png'] = 'rbxassetid://14368324807',
 	['newvape/assets/new/inventoryicon.png'] = 'rbxassetid://14928011633',
 	['newvape/assets/new/legit.png'] = 'rbxassetid://14425650534',
@@ -116,8 +116,8 @@ local getcustomassets = {
 	['newvape/assets/new/targetplayers2.png'] = 'rbxassetid://14497397862',
 	['newvape/assets/new/targetstab.png'] = 'rbxassetid://14497393895',
 	['newvape/assets/new/textguiicon.png'] = 'rbxassetid://14368355456',
-	['newvape/assets/new/textv4.png'] = 'rbxassetid://14368357095',
-	['newvape/assets/new/textvape.png'] = 'rbxassetid://14368358200',
+	['newvape/assets/new/textv4.png'] = 'rbxassetid://6767676767676767',
+	['newvape/assets/new/textvape.png'] = 'rbxassetid://82339584271888',
 	['newvape/assets/new/utilityicon.png'] = 'rbxassetid://14368359107',
 	['newvape/assets/new/vape.png'] = 'rbxassetid://14373395239',
 	['newvape/assets/new/warning.png'] = 'rbxassetid://14368361552',
@@ -314,7 +314,7 @@ local function downloadFile(path, func)
 	if not isfile(path) then
 		createDownloader(path)
 		local suc, res = pcall(function()
-			return game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/'..readfile('newvape/profiles/commit.txt')..'/'..select(1, path:gsub('newvape/', '')), true)
+			return game:HttpGet('https://raw.githubusercontent.com/aidanqm/Soluna/'..readfile('newvape/profiles/commit.txt')..'/'..select(1, path:gsub('newvape/', '')), true)
 		end)
 		if not suc or res == '404: Not Found' then
 			error(res)
@@ -5911,7 +5911,7 @@ general:CreateButton({
 		if shared.VapeDeveloper then
 			loadstring(readfile('newvape/loader.lua'), 'loader')()
 		else
-			loadstring(game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/'..readfile('newvape/profiles/commit.txt')..'/loader.lua', true))()
+			loadstring(game:HttpGet('https://raw.githubusercontent.com/aidanqm/Soluna/'..readfile('newvape/profiles/commit.txt')..'/loader.lua', true))()
 		end
 	end,
 	Tooltip = 'This will set your profile to the default settings of Vape'
@@ -5930,7 +5930,7 @@ general:CreateButton({
 		if shared.VapeDeveloper then
 			loadstring(readfile('newvape/loader.lua'), 'loader')()
 		else
-			loadstring(game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/'..readfile('newvape/profiles/commit.txt')..'/loader.lua', true))()
+			loadstring(game:HttpGet('https://raw.githubusercontent.com/aidanqm/Soluna/'..readfile('newvape/profiles/commit.txt')..'/loader.lua', true))()
 		end
 	end,
 	Tooltip = 'Reloads vape for debugging purposes'
@@ -6038,7 +6038,7 @@ guipane:CreateDropdown({
 			if shared.VapeDeveloper then
 				loadstring(readfile('newvape/loader.lua'), 'loader')()
 			else
-				loadstring(game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/'..readfile('newvape/profiles/commit.txt')..'/loader.lua', true))()
+				loadstring(game:HttpGet('https://raw.githubusercontent.com/aidanqm/Soluna/'..readfile('newvape/profiles/commit.txt')..'/loader.lua', true))()
 			end
 		end
 	end,

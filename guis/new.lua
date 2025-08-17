@@ -51,11 +51,20 @@ local tween = {
 	tweenstwo = {}
 }
 local uipallet = {
-	Main = Color3.fromRGB(26, 25, 26),
-	Text = Color3.fromRGB(200, 200, 200),
+	Main = Color3.fromRGB(0, 0, 0),
+	Secondary = Color3.fromRGB(10, 10, 10),
+	Text = Color3.fromRGB(242, 242, 242),
+	TextSecondary = Color3.fromRGB(178, 178, 178),
+	TextTertiary = Color3.fromRGB(127, 127, 127),
+	Glass = Color3.fromRGB(255, 255, 255),
+	GlassHover = Color3.fromRGB(255, 255, 255),
+	GlassActive = Color3.fromRGB(255, 255, 255),
+	GlassBorder = Color3.fromRGB(255, 255, 255),
+	GlassBorderHover = Color3.fromRGB(255, 255, 255),
+	GlassDropdown = Color3.fromRGB(64, 64, 64),
 	Font = Font.fromEnum(Enum.Font.Arial),
 	FontSemiBold = Font.fromEnum(Enum.Font.Arial, Enum.FontWeight.SemiBold),
-	Tween = TweenInfo.new(0.16, Enum.EasingStyle.Linear)
+	Tween = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 }
 
 local getcustomassets = {
@@ -141,15 +150,24 @@ local getfontsize = function(text, size, font)
 end
 
 local function addBlur(parent, notif)
-	local blur = Instance.new('ImageLabel')
-	blur.Name = 'Blur'
-	blur.Size = UDim2.new(1, 89, 1, 52)
-	blur.Position = UDim2.fromOffset(-48, -31)
-	blur.BackgroundTransparency = 1
-	blur.Image = getcustomasset('solunav2/assets/new/'..(notif and 'blurnotif' or 'blur')..'.png')
-	blur.ScaleType = Enum.ScaleType.Slice
-	blur.SliceCenter = Rect.new(52, 31, 261, 502)
+	local blur = Instance.new('Frame')
+	blur.Name = 'GlassBlur'
+	blur.Size = UDim2.new(1, 0, 1, 0)
+	blur.Position = UDim2.new(0, 0, 0, 0)
+	blur.BackgroundColor3 = color.Glass(0.04)
+	blur.BackgroundTransparency = 0.96
+	blur.BorderSizePixel = 0
 	blur.Parent = parent
+
+	local stroke = Instance.new('UIStroke')
+	stroke.Color = color.GlassBorder(0.1)
+	stroke.Transparency = 0.9
+	stroke.Thickness = 1
+	stroke.Parent = blur
+
+	local corner = Instance.new('UICorner')
+	corner.CornerRadius = UDim.new(0, 16)
+	corner.Parent = blur
 
 	return blur
 end
@@ -423,12 +441,28 @@ end
 do
 	function color.Dark(col, num)
 		local h, s, v = col:ToHSV()
-		return Color3.fromHSV(h, s, math.clamp(select(3, uipallet.Main:ToHSV()) > 0.5 and v + num or v - num, 0, 1))
+		return Color3.fromHSV(h, s, math.clamp(v - num, 0, 1))
 	end
 
 	function color.Light(col, num)
 		local h, s, v = col:ToHSV()
-		return Color3.fromHSV(h, s, math.clamp(select(3, uipallet.Main:ToHSV()) > 0.5 and v - num or v + num, 0, 1))
+		return Color3.fromHSV(h, s, math.clamp(v + num, 0, 1))
+	end
+
+	function color.Glass(opacity)
+		return Color3.fromRGB(
+			math.floor(255 * (opacity or 0.04)),
+			math.floor(255 * (opacity or 0.04)),
+			math.floor(255 * (opacity or 0.04))
+		)
+	end
+
+	function color.GlassBorder(opacity)
+		return Color3.fromRGB(
+			math.floor(255 * (opacity or 0.1)),
+			math.floor(255 * (opacity or 0.1)),
+			math.floor(255 * (opacity or 0.1))
+		)
 	end
 
 	function mainapi:Color(h)
@@ -446,10 +480,7 @@ do
 	end
 
 	function mainapi:TextColor(h, s, v)
-		if v >= 0.7 and (s < 0.6 or h > 0.04 and h < 0.56) then
-			return Color3.new(0.19, 0.19, 0.19)
-		end
-		return Color3.new(1, 1, 1)
+		return uipallet.Text
 	end
 end
 
@@ -509,13 +540,20 @@ components = {
 		local bkg = Instance.new('Frame')
 		bkg.Size = UDim2.fromOffset(200, 27)
 		bkg.Position = UDim2.fromOffset(10, 2)
-		bkg.BackgroundColor3 = color.Light(uipallet.Main, 0.05)
+		bkg.BackgroundColor3 = color.Glass(0.05)
+		bkg.BackgroundTransparency = 0.95
 		bkg.Parent = button
-		addCorner(bkg)
+		addCorner(bkg, UDim.new(0, 8))
+		local bkgStroke = Instance.new('UIStroke')
+		bkgStroke.Color = color.GlassBorder(0.1)
+		bkgStroke.Transparency = 0.9
+		bkgStroke.Thickness = 1
+		bkgStroke.Parent = bkg
 		local label = Instance.new('TextLabel')
 		label.Size = UDim2.new(1, -4, 1, -4)
 		label.Position = UDim2.fromOffset(2, 2)
-		label.BackgroundColor3 = uipallet.Main
+		label.BackgroundColor3 = color.Glass(0.02)
+		label.BackgroundTransparency = 0.98
 		label.Text = optionsettings.Name
 		label.TextColor3 = color.Dark(uipallet.Text, 0.16)
 		label.TextSize = 14
@@ -526,13 +564,27 @@ components = {
 		
 		button.MouseEnter:Connect(function()
 			tween:Tween(bkg, uipallet.Tween, {
-				BackgroundColor3 = color.Light(uipallet.Main, 0.0875)
+				BackgroundColor3 = color.Glass(0.0875),
+				BackgroundTransparency = 0.9125
 			})
+			if bkgStroke then
+				tween:Tween(bkgStroke, uipallet.Tween, {
+					Color = color.GlassBorder(0.2),
+					Transparency = 0.8
+				})
+			end
 		end)
 		button.MouseLeave:Connect(function()
 			tween:Tween(bkg, uipallet.Tween, {
-				BackgroundColor3 = color.Light(uipallet.Main, 0.05)
+				BackgroundColor3 = color.Glass(0.05),
+				BackgroundTransparency = 0.95
 			})
+			if bkgStroke then
+				tween:Tween(bkgStroke, uipallet.Tween, {
+					Color = color.GlassBorder(0.1),
+					Transparency = 0.9
+				})
+			end
 		end)
 		button.MouseButton1Click:Connect(optionsettings.Function)
 	end,
@@ -970,14 +1022,21 @@ components = {
 		bkg.Name = 'BKG'
 		bkg.Size = UDim2.new(1, -20, 1, -9)
 		bkg.Position = UDim2.fromOffset(10, 4)
-		bkg.BackgroundColor3 = color.Light(uipallet.Main, 0.034)
+		bkg.BackgroundColor3 = color.Glass(0.034)
+		bkg.BackgroundTransparency = 0.966
 		bkg.Parent = dropdown
 		addCorner(bkg, UDim.new(0, 6))
+		local bkgStroke = Instance.new('UIStroke')
+		bkgStroke.Color = color.GlassBorder(0.1)
+		bkgStroke.Transparency = 0.9
+		bkgStroke.Thickness = 1
+		bkgStroke.Parent = bkg
 		local button = Instance.new('TextButton')
 		button.Name = 'Dropdown'
 		button.Size = UDim2.new(1, -2, 1, -2)
 		button.Position = UDim2.fromOffset(1, 1)
-		button.BackgroundColor3 = uipallet.Main
+		button.BackgroundColor3 = color.Glass(0.02)
+		button.BackgroundTransparency = 0.98
 		button.AutoButtonColor = false
 		button.Text = ''
 		button.Parent = bkg
@@ -1082,13 +1141,27 @@ components = {
 		end)
 		dropdown.MouseEnter:Connect(function()
 			tween:Tween(bkg, uipallet.Tween, {
-				BackgroundColor3 = color.Light(uipallet.Main, 0.0875)
+				BackgroundColor3 = color.Glass(0.0875),
+				BackgroundTransparency = 0.9125
 			})
+			if bkgStroke then
+				tween:Tween(bkgStroke, uipallet.Tween, {
+					Color = color.GlassBorder(0.2),
+					Transparency = 0.8
+				})
+			end
 		end)
 		dropdown.MouseLeave:Connect(function()
 			tween:Tween(bkg, uipallet.Tween, {
-				BackgroundColor3 = color.Light(uipallet.Main, 0.034)
+				BackgroundColor3 = color.Glass(0.034),
+				BackgroundTransparency = 0.966
 			})
+			if bkgStroke then
+				tween:Tween(bkgStroke, uipallet.Tween, {
+					Color = color.GlassBorder(0.1),
+					Transparency = 0.9
+				})
+			end
 		end)
 		
 		optionapi.Object = dropdown
@@ -1209,9 +1282,16 @@ components = {
 		bkg.Name = 'Slider'
 		bkg.Size = UDim2.new(1, -20, 0, 2)
 		bkg.Position = UDim2.fromOffset(10, 37)
-		bkg.BackgroundColor3 = color.Light(uipallet.Main, 0.034)
+		bkg.BackgroundColor3 = color.Glass(0.034)
+		bkg.BackgroundTransparency = 0.966
 		bkg.BorderSizePixel = 0
 		bkg.Parent = slider
+		addCorner(bkg, UDim.new(1, 0))
+		local bkgStroke = Instance.new('UIStroke')
+		bkgStroke.Color = color.GlassBorder(0.1)
+		bkgStroke.Transparency = 0.9
+		bkgStroke.Thickness = 1
+		bkgStroke.Parent = bkg
 		local fill = bkg:Clone()
 		fill.Name = 'Fill'
 		fill.Size = UDim2.fromScale(math.clamp((optionapi.Value - optionsettings.Min) / optionsettings.Max, 0.04, 0.96), 1)
@@ -1678,9 +1758,15 @@ components = {
 		bkg.Name = 'BKG'
 		bkg.Size = UDim2.new(1, -20, 0, 29)
 		bkg.Position = UDim2.fromOffset(10, 23)
-		bkg.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
+		bkg.BackgroundColor3 = color.Glass(0.02)
+		bkg.BackgroundTransparency = 0.98
 		bkg.Parent = textbox
-		addCorner(bkg, UDim.new(0, 4))
+		addCorner(bkg, UDim.new(0, 8))
+		local bkgStroke = Instance.new('UIStroke')
+		bkgStroke.Color = color.GlassBorder(0.1)
+		bkgStroke.Transparency = 0.9
+		bkgStroke.Thickness = 1
+		bkgStroke.Parent = bkg
 		local box = Instance.new('TextBox')
 		box.Size = UDim2.new(1, -8, 1, 0)
 		box.Position = UDim2.fromOffset(8, 0)
@@ -1832,13 +1918,20 @@ components = {
 		addbkg.Name = 'Add'
 		addbkg.Size = UDim2.fromOffset(200, 31)
 		addbkg.Position = UDim2.fromOffset(10, 45)
-		addbkg.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
+		addbkg.BackgroundColor3 = color.Glass(0.02)
+		addbkg.BackgroundTransparency = 0.98
 		addbkg.Parent = window
-		addCorner(addbkg)
+		addCorner(addbkg, UDim.new(0, 8))
+		local addbkgStroke = Instance.new('UIStroke')
+		addbkgStroke.Color = color.GlassBorder(0.1)
+		addbkgStroke.Transparency = 0.9
+		addbkgStroke.Thickness = 1
+		addbkgStroke.Parent = addbkg
 		local addbox = addbkg:Clone()
 		addbox.Size = UDim2.new(1, -2, 1, -2)
 		addbox.Position = UDim2.fromOffset(1, 1)
-		addbox.BackgroundColor3 = color.Dark(uipallet.Main, 0.02)
+		addbox.BackgroundColor3 = color.Glass(0.01)
+		addbox.BackgroundTransparency = 0.99
 		addbox.Parent = addbkg
 		local addvalue = Instance.new('TextBox')
 		addvalue.Size = UDim2.new(1, -35, 1, 0)
@@ -2034,13 +2127,27 @@ components = {
 		end)
 		addvalue.MouseEnter:Connect(function()
 			tween:Tween(addbkg, uipallet.Tween, {
-				BackgroundColor3 = color.Light(uipallet.Main, 0.14)
+				BackgroundColor3 = color.Glass(0.14),
+				BackgroundTransparency = 0.86
 			})
+			if addbkgStroke then
+				tween:Tween(addbkgStroke, uipallet.Tween, {
+					Color = color.GlassBorder(0.2),
+					Transparency = 0.8
+				})
+			end
 		end)
 		addvalue.MouseLeave:Connect(function()
 			tween:Tween(addbkg, uipallet.Tween, {
-				BackgroundColor3 = color.Light(uipallet.Main, 0.02)
+				BackgroundColor3 = color.Glass(0.02),
+				BackgroundTransparency = 0.98
 			})
+			if addbkgStroke then
+				tween:Tween(addbkgStroke, uipallet.Tween, {
+					Color = color.GlassBorder(0.1),
+					Transparency = 0.9
+				})
+			end
 		end)
 		close.MouseButton1Click:Connect(function()
 			window.Visible = false
@@ -2106,13 +2213,20 @@ components = {
 		knobholder.Name = 'Knob'
 		knobholder.Size = UDim2.fromOffset(22, 12)
 		knobholder.Position = UDim2.new(1, -30, 0, 9)
-		knobholder.BackgroundColor3 = color.Light(uipallet.Main, 0.14)
+		knobholder.BackgroundColor3 = color.Glass(0.14)
+		knobholder.BackgroundTransparency = 0.86
 		knobholder.Parent = toggle
 		addCorner(knobholder, UDim.new(1, 0))
+		local knobStroke = Instance.new('UIStroke')
+		knobStroke.Color = color.GlassBorder(0.2)
+		knobStroke.Transparency = 0.8
+		knobStroke.Thickness = 1
+		knobStroke.Parent = knobholder
 		local knob = knobholder:Clone()
 		knob.Size = UDim2.fromOffset(8, 8)
 		knob.Position = UDim2.fromOffset(2, 2)
-		knob.BackgroundColor3 = uipallet.Main
+		knob.BackgroundColor3 = uipallet.Text
+		knob.BackgroundTransparency = 0
 		knob.Parent = knobholder
 		optionsettings.Function = optionsettings.Function or function() end
 		
@@ -2149,16 +2263,30 @@ components = {
 			hovered = true
 			if not optionapi.Enabled then
 				tween:Tween(knobholder, uipallet.Tween, {
-					BackgroundColor3 = color.Light(uipallet.Main, 0.37)
+					BackgroundColor3 = color.Glass(0.37),
+					BackgroundTransparency = 0.63
 				})
+				if knobStroke then
+					tween:Tween(knobStroke, uipallet.Tween, {
+						Color = color.GlassBorder(0.4),
+						Transparency = 0.6
+					})
+				end
 			end
 		end)
 		toggle.MouseLeave:Connect(function()
 			hovered = false
 			if not optionapi.Enabled then
 				tween:Tween(knobholder, uipallet.Tween, {
-					BackgroundColor3 = color.Light(uipallet.Main, 0.14)
+					BackgroundColor3 = color.Glass(0.14),
+					BackgroundTransparency = 0.86
 				})
+				if knobStroke then
+					tween:Tween(knobStroke, uipallet.Tween, {
+						Color = color.GlassBorder(0.2),
+						Transparency = 0.8
+					})
+				end
 			end
 		end)
 		toggle.MouseButton1Click:Connect(function()
@@ -2474,12 +2602,20 @@ function mainapi:CreateGUI()
 	local window = Instance.new('TextButton')
 	window.Name = 'GUICategory'
 	window.Position = UDim2.fromOffset(6, 60)
-	window.BackgroundColor3 = color.Dark(uipallet.Main, 0.02)
+	window.BackgroundColor3 = color.Glass(0.04)
+	window.BackgroundTransparency = 0.96
 	window.AutoButtonColor = false
 	window.Text = ''
 	window.Parent = clickgui
+	
+	local windowStroke = Instance.new('UIStroke')
+	windowStroke.Color = color.GlassBorder(0.1)
+	windowStroke.Transparency = 0.9
+	windowStroke.Thickness = 1
+	windowStroke.Parent = window
+	
 	addBlur(window)
-	addCorner(window)
+	addCorner(window, UDim.new(0, 16))
 	makeDraggable(window)
 	local logo = Instance.new('ImageLabel')
 	logo.Name = 'VapeLogo'
@@ -2489,13 +2625,6 @@ function mainapi:CreateGUI()
 	logo.Image = getcustomasset('solunav2/assets/new/guivape.png')
 	logo.ImageColor3 = select(3, uipallet.Main:ToHSV()) > 0.5 and uipallet.Text or Color3.new(1, 1, 1)
 	logo.Parent = window
-	local logov4 = Instance.new('ImageLabel')
-	logov4.Name = 'V4Logo'
-	logov4.Size = UDim2.fromOffset(28, 16)
-	logov4.Position = UDim2.new(1, 1, 0, 1)
-	logov4.BackgroundTransparency = 1
-	logov4.Image = getcustomasset('solunav2/assets/new/guiv4.png')
-	logov4.Parent = logo
 	local children = Instance.new('Frame')
 	children.Name = 'Children'
 	children.Size = UDim2.new(1, 0, 1, -33)
@@ -2530,11 +2659,17 @@ function mainapi:CreateGUI()
 	addTooltip(discordbutton, 'Join discord')
 	local settingspane = Instance.new('TextButton')
 	settingspane.Size = UDim2.fromScale(1, 1)
-	settingspane.BackgroundColor3 = color.Dark(uipallet.Main, 0.02)
+	settingspane.BackgroundColor3 = color.Glass(0.02)
+	settingspane.BackgroundTransparency = 0.98
 	settingspane.AutoButtonColor = false
 	settingspane.Visible = false
 	settingspane.Text = ''
 	settingspane.Parent = window
+	local settingspaneStroke = Instance.new('UIStroke')
+	settingspaneStroke.Color = color.GlassBorder(0.1)
+	settingspaneStroke.Transparency = 0.9
+	settingspaneStroke.Thickness = 1
+	settingspaneStroke.Parent = settingspane
 	local title = Instance.new('TextLabel')
 	title.Name = 'Title'
 	title.Size = UDim2.new(1, -36, 0, 20)
@@ -2573,7 +2708,8 @@ function mainapi:CreateGUI()
 	settingschildren.Name = 'Children'
 	settingschildren.Size = UDim2.new(1, 0, 1, -57)
 	settingschildren.Position = UDim2.fromOffset(0, 41)
-	settingschildren.BackgroundColor3 = uipallet.Main
+	settingschildren.BackgroundColor3 = color.Glass(0.01)
+	settingschildren.BackgroundTransparency = 0.99
 	settingschildren.BorderSizePixel = 0
 	settingschildren.Parent = settingspane
 	local settingswindowlist = Instance.new('UIListLayout')
@@ -2739,14 +2875,24 @@ function mainapi:CreateGUI()
 			if not optionapi.Enabled then
 				button.TextColor3 = uipallet.Text
 				if buttonicon then buttonicon.ImageColor3 = uipallet.Text end
-				button.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
+				button.BackgroundColor3 = color.Glass(0.08)
+				button.BackgroundTransparency = 0.92
+				if buttonStroke then
+					buttonStroke.Color = color.GlassBorder(0.2)
+					buttonStroke.Transparency = 0.8
+				end
 			end
 		end)
 		button.MouseLeave:Connect(function()
 			if not optionapi.Enabled then
-				button.TextColor3 = color.Dark(uipallet.Text, 0.16)
-				if buttonicon then buttonicon.ImageColor3 = color.Dark(uipallet.Text, 0.16) end
-				button.BackgroundColor3 = uipallet.Main
+				button.TextColor3 = uipallet.TextSecondary
+				if buttonicon then buttonicon.ImageColor3 = uipallet.TextSecondary end
+				button.BackgroundColor3 = color.Glass(0.04)
+				button.BackgroundTransparency = 0.96
+				if buttonStroke then
+					buttonStroke.Color = color.GlassBorder(0.08)
+					buttonStroke.Transparency = 0.92
+				end
 			end
 		end)
 		button.MouseButton1Click:Connect(function()
@@ -2768,9 +2914,16 @@ function mainapi:CreateGUI()
 		local bar = Instance.new('Frame')
 		bar.Name = 'Overlays'
 		bar.Size = UDim2.fromOffset(220, 36)
-		bar.BackgroundColor3 = uipallet.Main
+		bar.BackgroundColor3 = color.Glass(0.04)
+		bar.BackgroundTransparency = 0.96
 		bar.BorderSizePixel = 0
 		bar.Parent = children
+		local barStroke = Instance.new('UIStroke')
+		barStroke.Color = color.GlassBorder(0.08)
+		barStroke.Transparency = 0.92
+		barStroke.Thickness = 1
+		barStroke.Parent = bar
+		addCorner(bar, UDim.new(0, 8))
 		components.Divider(bar)
 		local button = Instance.new('ImageButton')
 		button.Size = UDim2.fromOffset(24, 24)
@@ -2796,9 +2949,15 @@ function mainapi:CreateGUI()
 		local window = Instance.new('Frame')
 		window.Size = UDim2.fromOffset(220, 42)
 		window.Position = UDim2.fromScale(0, 1)
-		window.BackgroundColor3 = uipallet.Main
+		window.BackgroundColor3 = color.Glass(0.08)
+		window.BackgroundTransparency = 0.92
 		window.Parent = shadow
-		addCorner(window)
+		addCorner(window, UDim.new(0, 12))
+		local windowStroke = Instance.new('UIStroke')
+		windowStroke.Color = color.GlassBorder(0.15)
+		windowStroke.Transparency = 0.85
+		windowStroke.Thickness = 1
+		windowStroke.Parent = window
 		local icon = Instance.new('ImageLabel')
 		icon.Name = 'Icon'
 		icon.Size = UDim2.fromOffset(14, 12)
@@ -3001,11 +3160,17 @@ function mainapi:CreateGUI()
 		arrow.Parent = button
 		local settingspane = Instance.new('TextButton')
 		settingspane.Size = UDim2.fromScale(1, 1)
-		settingspane.BackgroundColor3 = uipallet.Main
+		settingspane.BackgroundColor3 = color.Glass(0.04)
+		settingspane.BackgroundTransparency = 0.96
 		settingspane.AutoButtonColor = false
 		settingspane.Visible = false
 		settingspane.Text = ''
 		settingspane.Parent = window
+		local settingspaneStroke = Instance.new('UIStroke')
+		settingspaneStroke.Color = color.GlassBorder(0.1)
+		settingspaneStroke.Transparency = 0.9
+		settingspaneStroke.Thickness = 1
+		settingspaneStroke.Parent = settingspane
 		local title = Instance.new('TextLabel')
 		title.Name = 'Title'
 		title.Size = UDim2.new(1, -36, 0, 20)
@@ -3031,7 +3196,8 @@ function mainapi:CreateGUI()
 		settingschildren.Name = 'Children'
 		settingschildren.Size = UDim2.new(1, 0, 1, -57)
 		settingschildren.Position = UDim2.fromOffset(0, 41)
-		settingschildren.BackgroundColor3 = uipallet.Main
+		settingschildren.BackgroundColor3 = color.Glass(0.01)
+		settingschildren.BackgroundTransparency = 0.99
 		settingschildren.BorderSizePixel = 0
 		settingschildren.Parent = settingspane
 		local divider = Instance.new('Frame')
@@ -3063,11 +3229,21 @@ function mainapi:CreateGUI()
 		end)
 		button.MouseEnter:Connect(function()
 			button.TextColor3 = uipallet.Text
-			button.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
+			button.BackgroundColor3 = color.Glass(0.08)
+			button.BackgroundTransparency = 0.92
+			if buttonStroke then
+				buttonStroke.Color = color.GlassBorder(0.2)
+				buttonStroke.Transparency = 0.8
+			end
 		end)
 		button.MouseLeave:Connect(function()
-			button.TextColor3 = color.Dark(uipallet.Text, 0.16)
-			button.BackgroundColor3 = uipallet.Main
+			button.TextColor3 = uipallet.TextSecondary
+			button.BackgroundColor3 = color.Glass(0.04)
+			button.BackgroundTransparency = 0.96
+			if buttonStroke then
+				buttonStroke.Color = color.GlassBorder(0.08)
+				buttonStroke.Transparency = 0.92
+			end
 		end)
 		button.MouseButton1Click:Connect(function()
 			settingspane.Visible = true
@@ -4955,11 +5131,17 @@ function mainapi:CreateLegit()
 	window.Name = 'LegitGUI'
 	window.Size = UDim2.fromOffset(700, 389)
 	window.Position = UDim2.new(0.5, -350, 0.5, -194)
-	window.BackgroundColor3 = uipallet.Main
+	window.BackgroundColor3 = color.Glass(0.08)
+	window.BackgroundTransparency = 0.92
 	window.Visible = false
 	window.Parent = scaledgui
 	addBlur(window)
-	addCorner(window)
+	addCorner(window, UDim.new(0, 16))
+	local windowStroke = Instance.new('UIStroke')
+	windowStroke.Color = color.GlassBorder(0.15)
+	windowStroke.Transparency = 0.85
+	windowStroke.Thickness = 1
+	windowStroke.Parent = window
 	makeDraggable(window)
 	local modal = Instance.new('TextButton')
 	modal.BackgroundTransparency = 1
@@ -5005,12 +5187,18 @@ function mainapi:CreateLegit()
 
 		local module = Instance.new('TextButton')
 		module.Name = modulesettings.Name
-		module.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
+		module.BackgroundColor3 = color.Glass(0.02)
+		module.BackgroundTransparency = 0.98
 		module.Text = ''
 		module.AutoButtonColor = false
 		module.Parent = children
 		addTooltip(module, modulesettings.Tooltip)
-		addCorner(module)
+		addCorner(module, UDim.new(0, 12))
+		local moduleStroke = Instance.new('UIStroke')
+		moduleStroke.Color = color.GlassBorder(0.1)
+		moduleStroke.Transparency = 0.9
+		moduleStroke.Thickness = 1
+		moduleStroke.Parent = module
 		local title = Instance.new('TextLabel')
 		title.Name = 'Title'
 		title.Size = UDim2.new(1, -16, 0, 20)
@@ -5026,13 +5214,20 @@ function mainapi:CreateLegit()
 		knob.Name = 'Knob'
 		knob.Size = UDim2.fromOffset(22, 12)
 		knob.Position = UDim2.new(1, -57, 0, 14)
-		knob.BackgroundColor3 = color.Light(uipallet.Main, 0.14)
+		knob.BackgroundColor3 = color.Glass(0.14)
+		knob.BackgroundTransparency = 0.86
 		knob.Parent = module
 		addCorner(knob, UDim.new(1, 0))
+		local knobStroke = Instance.new('UIStroke')
+		knobStroke.Color = color.GlassBorder(0.2)
+		knobStroke.Transparency = 0.8
+		knobStroke.Thickness = 1
+		knobStroke.Parent = knob
 		local knobmain = knob:Clone()
 		knobmain.Size = UDim2.fromOffset(8, 8)
 		knobmain.Position = UDim2.fromOffset(2, 2)
-		knobmain.BackgroundColor3 = uipallet.Main
+		knobmain.BackgroundColor3 = uipallet.Text
+		knobmain.BackgroundTransparency = 0
 		knobmain.Parent = knob
 		local dotsbutton = Instance.new('TextButton')
 		dotsbutton.Name = 'Dots'
@@ -5063,10 +5258,16 @@ function mainapi:CreateLegit()
 		local settingspane = Instance.new('TextButton')
 		settingspane.Size = UDim2.new(0, 220, 1, 0)
 		settingspane.Position = UDim2.fromScale(1, 0)
-		settingspane.BackgroundColor3 = uipallet.Main
+		settingspane.BackgroundColor3 = color.Glass(0.08)
+		settingspane.BackgroundTransparency = 0.92
 		settingspane.AutoButtonColor = false
 		settingspane.Text = ''
 		settingspane.Parent = shadow
+		local settingspaneStroke = Instance.new('UIStroke')
+		settingspaneStroke.Color = color.GlassBorder(0.15)
+		settingspaneStroke.Transparency = 0.85
+		settingspaneStroke.Thickness = 1
+		settingspaneStroke.Parent = settingspane
 		local settingstitle = Instance.new('TextLabel')
 		settingstitle.Name = 'Title'
 		settingstitle.Size = UDim2.new(1, -36, 0, 20)
@@ -5091,7 +5292,8 @@ function mainapi:CreateLegit()
 		settingschildren.Name = 'Children'
 		settingschildren.Size = UDim2.new(1, 0, 1, -45)
 		settingschildren.Position = UDim2.fromOffset(0, 41)
-		settingschildren.BackgroundColor3 = uipallet.Main
+		settingschildren.BackgroundColor3 = color.Glass(0.01)
+		settingschildren.BackgroundTransparency = 0.99
 		settingschildren.BorderSizePixel = 0
 		settingschildren.ScrollBarThickness = 2
 		settingschildren.ScrollBarImageTransparency = 0.75
@@ -5173,12 +5375,22 @@ function mainapi:CreateLegit()
 		end)
 		module.MouseEnter:Connect(function()
 			if not moduleapi.Enabled then
-				module.BackgroundColor3 = color.Light(uipallet.Main, 0.05)
+				module.BackgroundColor3 = color.Glass(0.05)
+				module.BackgroundTransparency = 0.95
+				if moduleStroke then
+					moduleStroke.Color = color.GlassBorder(0.2)
+					moduleStroke.Transparency = 0.8
+				end
 			end
 		end)
 		module.MouseLeave:Connect(function()
 			if not moduleapi.Enabled then
-				module.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
+				module.BackgroundColor3 = color.Glass(0.02)
+				module.BackgroundTransparency = 0.98
+				if moduleStroke then
+					moduleStroke.Color = color.GlassBorder(0.1)
+					moduleStroke.Transparency = 0.9
+				end
 			end
 		end)
 		module.MouseButton1Click:Connect(function()
@@ -5272,16 +5484,21 @@ function mainapi:CreateNotification(title, text, duration, type)
 			setthreadidentity(8)
 		end
 		local i = #notifications:GetChildren() + 1
-		local notification = Instance.new('ImageLabel')
+		local notification = Instance.new('Frame')
 		notification.Name = 'Notification'
 		notification.Size = UDim2.fromOffset(math.max(getfontsize(removeTags(text), 14, uipallet.Font).X + 80, 266), 75)
 		notification.Position = UDim2.new(1, 0, 1, -(29 + (78 * i)))
 		notification.ZIndex = 5
-		notification.BackgroundTransparency = 1
-		notification.Image = getcustomasset('solunav2/assets/new/notification.png')
-		notification.ScaleType = Enum.ScaleType.Slice
-		notification.SliceCenter = Rect.new(7, 7, 9, 9)
+		notification.BackgroundColor3 = color.Glass(0.08)
+		notification.BackgroundTransparency = 0.92
+		notification.BorderSizePixel = 0
 		notification.Parent = notifications
+		addCorner(notification, UDim.new(0, 12))
+		local notifStroke = Instance.new('UIStroke')
+		notifStroke.Color = color.GlassBorder(0.15)
+		notifStroke.Transparency = 0.85
+		notifStroke.Thickness = 1
+		notifStroke.Parent = notification
 		addBlur(notification, true)
 		local iconshadow = Instance.new('ImageLabel')
 		iconshadow.Name = 'Icon'

@@ -1,8 +1,56 @@
 
-Profiles/6872274481.vapeprofiles
-future.lua
-loadstring.lua
-CustomModules/backup.txt
-Profiles/*.*
+
+# Ignore all profiles and Vape related files
+Profiles/
+*.vapeprofiles
+*.vape
 VapeV4.lua
-CustomModules/292439477.lua
+
+# Ignore Lua scripts that are usually local or dynamic
+*.lua
+CustomModules/*.lua
+CustomModules/backup.txt
+
+# Ignore common backup and temp files
+*.bak
+*.backup
+*.tmp
+*.temp
+*.swp
+*.swo
+*.orig
+*.rej
+
+# Ignore OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Ignore IDE/editor specific files/folders
+.vscode/
+.idea/
+*.iml
+*.agent.md
+*.code-workspace
+*.sublime-workspace
+*.sublime-project
+
+# Ignore node_modules and other dependency folders (if applicable)
+node_modules/
+dist/
+build/
+out/
+
+# Ignore logs and runtime files
+*.log
+*.pid
+*.seed
+
+# Ignore dependency/package manager files (optional)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Ignore any hidden files you want to keep local-only (add as needed)
+.*.local
+.*.secret

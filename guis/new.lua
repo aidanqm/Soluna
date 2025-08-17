@@ -150,24 +150,15 @@ local getfontsize = function(text, size, font)
 end
 
 local function addBlur(parent, notif)
-	local blur = Instance.new('Frame')
-	blur.Name = 'GlassBlur'
-	blur.Size = UDim2.new(1, 0, 1, 0)
-	blur.Position = UDim2.new(0, 0, 0, 0)
-	blur.BackgroundColor3 = color.Glass(0.04)
-	blur.BackgroundTransparency = 0.96
-	blur.BorderSizePixel = 0
+	local blur = Instance.new('ImageLabel')
+	blur.Name = 'Blur'
+	blur.Size = UDim2.new(1, 89, 1, 52)
+	blur.Position = UDim2.fromOffset(-48, -31)
+	blur.BackgroundTransparency = 1
+	blur.Image = getcustomasset('solunav2/assets/new/'..(notif and 'blurnotif' or 'blur')..'.png')
+	blur.ScaleType = Enum.ScaleType.Slice
+	blur.SliceCenter = Rect.new(52, 31, 261, 502)
 	blur.Parent = parent
-
-	local stroke = Instance.new('UIStroke')
-	stroke.Color = color.GlassBorder(0.1)
-	stroke.Transparency = 0.9
-	stroke.Thickness = 1
-	stroke.Parent = blur
-
-	local corner = Instance.new('UICorner')
-	corner.CornerRadius = UDim.new(0, 16)
-	corner.Parent = blur
 
 	return blur
 end
